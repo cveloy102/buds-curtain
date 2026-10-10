@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buds 5 — дизайн карточки</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#0c1113;color:#f5f7f4}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#213a38 0,transparent 45%),#0c1113}
+    button,input{font:inherit}button{cursor:pointer}main{max-width:1180px;margin:auto;padding:50px 28px 56px;display:grid;grid-template-columns:minmax(330px,1fr) minmax(360px,460px);gap:64px;align-items:center;min-height:100vh}
+    .eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#a9e3d1;font-weight:750}.intro h1{font-size:clamp(44px,6vw,78px);line-height:.99;letter-spacing:-.07em;margin:18px 0 20px;font-weight:720}.intro p{color:#aabbb8;max-width:520px;font-size:18px;line-height:1.55}.controls{margin-top:36px;border:1px solid #35504b;background:#162022;border-radius:24px;padding:22px;max-width:510px;box-shadow:0 20px 70px #0003}.controls h2{font-size:15px;margin:0 0 16px}.buttonrow{display:flex;gap:10px;flex-wrap:wrap}.action{border:1px solid #41635a;background:#22332f;color:#eff9f4;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:650}.action.primary{background:#abe6d2;border-color:#abe6d2;color:#13231e}.action:hover{filter:brightness(1.12)}.sliders{display:grid;gap:14px;margin-top:22px}.sliders label{display:grid;grid-template-columns:105px 1fr 42px;align-items:center;gap:10px;color:#bdccc7;font-size:13px}.sliders output{text-align:right;color:white;font-variant-numeric:tabular-nums}input[type=range]{accent-color:#abe6d2;width:100%}.note{font-size:12px!important;line-height:1.45!important;margin:18px 0 0;color:#81928e!important}
+    .stage{display:flex;justify-content:center}.phone{width:390px;height:790px;border:8px solid #37403d;border-radius:48px;position:relative;overflow:hidden;background:linear-gradient(145deg,#344c4a 0%,#192b2d 44%,#0b181c 100%);box-shadow:0 38px 100px #0009,inset 0 0 0 2px #7a888144}.phone:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 10% 16%,#719b8a33,transparent 32%),radial-gradient(circle at 92% 71%,#65a68b22,transparent 34%);pointer-events:none}.island{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:110px;height:27px;background:#080c0e;border-radius:30px}.status{position:absolute;top:22px;left:29px;right:27px;display:flex;justify-content:space-between;font-size:13px;font-weight:700}.status span:last-child{letter-spacing:3px}.clock{position:absolute;top:122px;width:100%;text-align:center;font-size:76px;letter-spacing:-.07em;font-weight:280}.date{position:absolute;top:215px;width:100%;text-align:center;color:#c4d6d0;font-size:14px}.wallpaper{position:absolute;inset:280px 50px 120px;border:1px solid #c1d9ca13;border-radius:50%;transform:rotate(-20deg);box-shadow:0 0 0 38px #c1d9ca0a,0 0 0 76px #c1d9ca05}.navline{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:108px;height:4px;border-radius:10px;background:#f4f7efc9}
+    .popup{position:absolute;left:16px;right:16px;bottom:32px;border-radius:28px;background:#1b2628f8;border:1px solid #ffffff20;box-shadow:0 20px 50px #0009;overflow:hidden;transform:translateY(calc(100% + 70px));opacity:0;transition:transform 320ms cubic-bezier(.2,.82,.2,1),opacity 240ms ease;will-change:transform}.popup.visible{transform:translateY(0);opacity:1}.popup.leaving{transition-duration:260ms}.popup-inner{position:relative;padding:18px 19px 20px}.grab{width:34px;height:4px;background:#b5c8bf55;border-radius:9px;margin:-7px auto 17px}.head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.head h2{font-size:18px;line-height:1.1;margin:0 0 6px;letter-spacing:-.03em}.head p{margin:0;font-size:12px;color:#afc1b8}.live{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#bce8d2;background:#a9e6d21a;border-radius:100px;padding:7px 9px;white-space:nowrap}.hero{height:124px;display:flex;justify-content:center;align-items:center}.hero svg{width:256px;height:100px}.battery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#0e191a91;border:1px solid #d3f6e511;border-radius:16px;padding:10px 11px 12px;min-height:77px}.metric .label{font-size:11px;color:#b4c5bc}.metric .value{font-size:21px;letter-spacing:-.04em;font-weight:720;font-variant-numeric:tabular-nums;margin:4px 0 8px}.track{height:4px;background:#c0dccd2c;border-radius:9px;overflow:hidden}.fill{height:100%;background:#aee6d1;border-radius:9px;width:0;transition:width 300ms}.metric.unknown .fill{width:0!important}.metric.unknown .value{color:#9caea7}.hint{color:#a6b9af;font-size:11px;margin-top:12px;text-align:center}.hint.warn{color:#f5bd75}@media(max-width:800px){main{grid-template-columns:1fr;gap:40px;padding:32px 16px}.intro h1{font-size:50px}.stage{order:-1}.phone{transform:scale(.82);transform-origin:top center;margin-bottom:-140px}}@media(prefers-reduced-motion:reduce){.popup,.fill{transition:none!important}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="intro">
+    <div class="eyebrow">Концепт / Android</div>
+    <h1>Открыл кейс.<br>Увидел заряд.</h1>
+    <p>Плавающая карточка Xiaomi Buds 5 поднимается от нижнего края экрана. Закрытие кейса возвращает её вниз. Этот макет показывает внешний вид и поведение; Bluetooth здесь имитируется.</p>
+    <div class="controls">
+      <h2>Проверить сценарий</h2>
+      <div class="buttonrow"><button id="open" class="action primary">Открыть кейс</button><button id="close" class="action">Закрыть кейс</button><button id="unknown" class="action">Кейс без данных</button></div>
+      <div class="sliders">
+        <label>Левый <input id="left" type="range" min="0" max="100" value="86"><output for="left">86%</output></label>
+        <label>Правый <input id="right" type="range" min="0" max="100" value="82"><output for="right">82%</output></label>
+        <label>Кейс <input id="case" type="range" min="0" max="100" value="64"><output for="case">64%</output></label>
+      </div>
+      <p class="note">Проценты в макете демонстрационные. В приложении неизвестные данные не будут заменяться предполагаемыми значениями.</p>
+    </div>
+  </section>
+  <div class="stage"><div class="phone" aria-label="Макет экрана телефона">
+    <div class="island"></div><div class="status"><span>9:41</span><span>◕ ▰</span></div><div class="clock">9:41</div><div class="date">Среда, 30 сентября</div><div class="wallpaper"></div>
+    <div id="popup" class="popup" role="status" aria-live="polite"><div class="popup-inner"><div class="grab"></div><div class="head"><div><h2>Xiaomi Buds 5</h2><p id="subtitle">Кейс открыт · рядом с телефоном</p></div><span class="live">● Подключено</span></div>
+      <div class="hero" aria-hidden="true"><svg viewBox="0 0 256 100" fill="none" stroke="#dce9e3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="translate(48 4) scale(-1 1)"><rect x="4" y="6" width="28" height="36" rx="14"/><path d="M18 42v43a7 7 0 0 0 14 0V44"/><path d="M10 22h9" stroke="#aee6d1"/></g>
+        <g transform="translate(74 27)"><rect x="0" y="0" width="108" height="65" rx="28"/><path d="M2 24h104" stroke="#91aaa0"/><circle cx="54" cy="46" r="2" fill="#aee6d1" stroke="none"/></g>
+        <g transform="translate(208 4)"><rect x="4" y="6" width="28" height="36" rx="14"/><path d="M18 42v43a7 7 0 0 0 14 0V44"/><path d="M20 22h9" stroke="#aee6d1"/></g>
+      </svg></div>
+      <div class="battery"><div class="metric" data-name="left"><div class="label">Левый</div><div class="value">86%</div><div class="track"><div class="fill"></div></div></div><div class="metric" data-name="right"><div class="label">Правый</div><div class="value">82%</div><div class="track"><div class="fill"></div></div></div><div class="metric" data-name="case"><div class="label">Кейс</div><div class="value">64%</div><div class="track"><div class="fill"></div></div></div></div>
+      <div id="hint" class="hint">Свайп вниз, чтобы скрыть</div>
+    </div></div><div class="navline"></div></div></div>
+</main>
+<script>
+  const popup=document.getElementById('popup'), hint=document.getElementById('hint'), subtitle=document.getElementById('subtitle');let caseUnknown=false, touchStart=0;
+  function update(){for(const name of ['left','right','case']){const input=document.getElementById(name),metric=document.querySelector(`[data-name="${name}"]`),unknown=name==='case'&&caseUnknown;metric.classList.toggle('unknown',unknown);metric.querySelector('.value').textContent=unknown?'—':`${input.value}%`;metric.querySelector('.fill').style.width=unknown?'0':`${input.value}%`;input.nextElementSibling.textContent=`${input.value}%`;}hint.textContent=caseUnknown?'Заряд кейса недоступен':'Свайп вниз, чтобы скрыть';hint.classList.toggle('warn',caseUnknown)}
+  document.getElementById('open').onclick=()=>{popup.classList.remove('leaving');popup.classList.add('visible');subtitle.textContent='Кейс открыт · рядом с телефоном'};
+  document.getElementById('close').onclick=()=>{popup.classList.add('leaving');popup.classList.remove('visible')};
+  document.getElementById('unknown').onclick=()=>{caseUnknown=!caseUnknown;update();popup.classList.remove('leaving');popup.classList.add('visible')};
+  document.querySelectorAll('input[type=range]').forEach(x=>x.addEventListener('input',update));popup.addEventListener('touchstart',e=>touchStart=e.touches[0].clientY,{passive:true});popup.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-touchStart>50)document.getElementById('close').click()},{passive:true});update();
+</script>
+</body>
+</html>

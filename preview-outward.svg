@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="Макет всплывающей карточки Xiaomi Buds 5 на телефоне">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="0%" r="90%"><stop stop-color="#203b39"/><stop offset="1" stop-color="#0c1113"/></radialGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#385a52"/><stop offset=".55" stop-color="#1c3030"/><stop offset="1" stop-color="#0b171b"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#273c35"/><stop offset="1" stop-color="#172725"/></linearGradient>
+    <linearGradient id="device" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf3"/><stop offset=".53" stop-color="#aeb8af"/><stop offset="1" stop-color="#eff3eb"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000" flood-opacity=".55"/></filter>
+    <filter id="smallshadow"><feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000" flood-opacity=".45"/></filter>
+    <clipPath id="screenclip"><rect x="727" y="44" width="390" height="712" rx="41"/></clipPath>
+    <style>text{font-family:Inter,'Segoe UI',Arial,sans-serif}.eyebrow{fill:#aae6d2;font-size:15px;font-weight:700;letter-spacing:4px}.title{fill:#f4f7f2;font-size:67px;font-weight:700;letter-spacing:-4px}.body{fill:#aabbb8;font-size:22px}.small{fill:#a9bdb4;font-size:13px}.metriclabel{fill:#b1c3b8;font-size:13px}.metricvalue{fill:#f7fbf5;font-size:27px;font-weight:700}.cardtitle{fill:#f7fbf5;font-size:22px;font-weight:700}</style>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="850" cy="-90" r="440" fill="#a0e5c4" opacity=".035"/>
+  <text x="68" y="192" class="eyebrow">КОНЦЕПТ / ANDROID</text>
+  <text x="65" y="290" class="title">Открыл кейс.</text>
+  <text x="65" y="365" class="title">Увидел заряд.</text>
+  <text x="69" y="425" class="body">Карточка поднимается снизу,</text>
+  <text x="69" y="456" class="body">когда Buds 5 рядом с телефоном.</text>
+  <text x="69" y="487" class="body">Закрыл кейс — карточка уезжает вниз.</text>
+  <rect x="68" y="562" width="245" height="49" rx="14" fill="#abe6d2"/>
+  <text x="91" y="594" fill="#13231e" font-size="17" font-weight="700">Состояние: кейс открыт</text>
+  <text x="69" y="648" class="small">Проценты здесь демонстрационные</text>
+  <text x="69" y="670" class="small">Сигнал закрытия проверим на устройстве</text>
+  <g filter="url(#shadow)"><rect x="719" y="36" width="406" height="728" rx="48" fill="#37403d" stroke="#718079" stroke-width="3"/><rect x="727" y="44" width="390" height="712" rx="41" fill="url(#screen)"/></g>
+  <g clip-path="url(#screenclip)">
+    <circle cx="780" cy="200" r="180" fill="#9adebb" opacity=".055"/>
+    <ellipse cx="1025" cy="510" rx="350" ry="270" fill="none" stroke="#a9e6d2" stroke-opacity=".06" stroke-width="70" transform="rotate(-24 1025 510)"/>
+    <text x="754" y="88" fill="#f4f7f0" font-size="15" font-weight="700">9:41</text>
+    <text x="1063" y="88" fill="#f4f7f0" font-size="17">● ▰</text>
+    <rect x="864" y="56" width="115" height="28" rx="15" fill="#080c0e"/>
+    <text x="847" y="220" fill="#eff5ec" font-size="79" font-weight="300" letter-spacing="-6">9:41</text>
+    <text x="849" y="254" fill="#c4d7cf" font-size="16">Среда, 30 сентября</text>
+    <g filter="url(#smallshadow)"><rect x="744" y="440" width="356" height="278" rx="29" fill="url(#card)" stroke="#d7f6e3" stroke-opacity=".18"/></g>
+    <rect x="903" y="450" width="38" height="4" rx="2" fill="#a9c7b4" opacity=".5"/>
+    <text x="763" y="490" class="cardtitle">Xiaomi Buds 5</text>
+    <text x="764" y="511" class="small">Кейс открыт · рядом с телефоном</text>
+    <rect x="1008" y="469" width="74" height="26" rx="13" fill="#a9e6d2" fill-opacity=".12"/>
+    <circle cx="1020" cy="482" r="3" fill="#b7ecd5"/>
+    <text x="1029" y="486" fill="#b7ecd5" font-size="10" font-weight="700">ОНЛАЙН</text>
+    <g fill="none" stroke="#dce9e3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="788" y="531" width="27" height="35" rx="13"/><path d="M801.5 566v41a7 7 0 0 1-14 0v-39"/><path d="M800 547h8" stroke="#aee6d1"/>
+      <rect x="1023" y="531" width="27" height="35" rx="13"/><path d="M1036.5 566v41a7 7 0 0 0 14 0v-39"/><path d="M1034 547h8" stroke="#aee6d1"/>
+      <rect x="857" y="550" width="123" height="68" rx="29"/><path d="M859 577h119" stroke="#91aaa0"/>
+    </g>
+    <circle cx="918" cy="597" r="2.5" fill="#aee6d1"/>
+    <g>
+      <rect x="763" y="631" width="99" height="68" rx="15" fill="#0d191a" fill-opacity=".8"/>
+      <rect x="872" y="631" width="99" height="68" rx="15" fill="#0d191a" fill-opacity=".8"/>
+      <rect x="981" y="631" width="99" height="68" rx="15" fill="#0d191a" fill-opacity=".8"/>
+      <text x="775" y="650" class="metriclabel">Левый</text><text x="884" y="650" class="metriclabel">Правый</text><text x="993" y="650" class="metriclabel">Кейс</text>
+      <text x="775" y="678" class="metricvalue">86%</text><text x="884" y="678" class="metricvalue">82%</text><text x="993" y="678" class="metricvalue">64%</text>
+      <rect x="775" y="687" width="75" height="4" rx="2" fill="#bad9c9" opacity=".25"/><rect x="775" y="687" width="65" height="4" rx="2" fill="#abe6d2"/>
+      <rect x="884" y="687" width="75" height="4" rx="2" fill="#bad9c9" opacity=".25"/><rect x="884" y="687" width="62" height="4" rx="2" fill="#abe6d2"/>
+      <rect x="993" y="687" width="75" height="4" rx="2" fill="#bad9c9" opacity=".25"/><rect x="993" y="687" width="48" height="4" rx="2" fill="#abe6d2"/>
+    </g>
+    <rect x="867" y="739" width="109" height="4" rx="2" fill="#f4f7ef" opacity=".78"/>
+  </g>
+</svg>
