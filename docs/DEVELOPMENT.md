@@ -28,7 +28,7 @@ java -cp build/checks com.budscurtain.BudsDockEvidenceCheck
 
 На Windows перед `javac` создайте каталог командой `New-Item -ItemType Directory -Force build/checks`.
 
-GitHub Actions повторяет эти Java-проверки и собирает debug APK. Проверки на реальных Xiaomi Buds 5 и POCO F7 описаны в [OBSERVATIONS.md](../OBSERVATIONS.md). Демо сайта явно помечено как макет; оно не считывает заряд.
+GitHub Actions повторяет эти Java-проверки и собирает debug APK. Проверки на реальных Xiaomi Buds 5 и POCO F7 описаны в [OBSERVATIONS.md](../OBSERVATIONS.md). Изображения карточки на сайте показывают пример заряда и не считывают Bluetooth-данные.
 
 ## Выпуск APK
 
@@ -41,3 +41,5 @@ GitHub Actions повторяет эти Java-проверки и собирае
 ## Публикация сайта
 
 Статический сайт находится в `landing/`. Workflow `.github/workflows/pages.yml` переносит его содержимое в GitHub Pages после изменений в `main`. Для публикации репозиторий должен иметь доступный GitHub Pages и источник **GitHub Actions** в настройках Pages. Сайт не содержит данных пользователя; загрузка APK ведёт на GitHub Releases.
+
+Рендер наушников для сайта совпадает с `app/src/main/res/drawable-nodpi/buds5_graphite.webp`. Скриншоты `landing/assets/stand-dark.jpg` и `stand-light.jpg` сняты непосредственно с исходных стендов `design/theme-stand-dark.html` и `theme-stand-light.html`. Для повторного снимка откройте нужный HTML в браузере и снимите область 370 × 515 пикселей от верхнего левого угла. Это дизайн-стенд с примерными значениями заряда.

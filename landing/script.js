@@ -1,30 +1,24 @@
-const phone = document.getElementById('phone-preview');
-const curtain = document.getElementById('curtain-preview');
-const openButton = document.getElementById('open-case');
-const closeButton = document.getElementById('close-case');
+const preview = document.getElementById('phone-preview');
+const caption = document.getElementById('preview-caption');
 const darkButton = document.getElementById('dark-theme');
 const lightButton = document.getElementById('light-theme');
 
-function select(a, b) {
-  a.classList.add('is-active');
-  a.setAttribute('aria-pressed', 'true');
-  b.classList.remove('is-active');
-  b.setAttribute('aria-pressed', 'false');
+// Load both screenshots before the user changes themes.
+for (const theme of ['dark', 'light']) {
+  const image = new Image();
+  image.src = 'assets/stand-' + theme + '.jpg';
 }
 
-openButton.addEventListener('click', () => {
-  select(openButton, closeButton);
-  curtain.classList.remove('is-hidden');
-});
-closeButton.addEventListener('click', () => {
-  select(closeButton, openButton);
-  curtain.classList.add('is-hidden');
-});
-darkButton.addEventListener('click', () => {
-  select(darkButton, lightButton);
-  phone.classList.remove('is-light');
-});
-lightButton.addEventListener('click', () => {
-  select(lightButton, darkButton);
-  phone.classList.add('is-light');
-});
+function showTheme(theme) {
+  const isDark = theme === 'dark';
+  preview.src = 'assets/stand-' + theme + '.jpg';
+  preview.alt = (isDark ? 'Тёмная' : 'Светлая') + ' карточка Xiaomi Buds 5: пример заряда — левый наушник 100%, кейс 64%, правый 100%';
+  caption.textContent = (isDark ? 'ТЁМНАЯ' : 'СВЕТЛАЯ') + ' ТЕМА / ПРИМЕР КАРТОЧКИ';
+  darkButton.classList.toggle('is-active', isDark);
+  lightButton.classList.toggle('is-active', !isDark);
+  darkButton.setAttribute('aria-pressed', String(isDark));
+  lightButton.setAttribute('aria-pressed', String(!isDark));
+}
+
+darkButton.addEventListener('click', () => showTheme('dark'));
+lightButton.addEventListener('click', () => showTheme('light'));
