@@ -1,5 +1,6 @@
 package com.budscurtain;
 
+import android.annotation.SuppressLint;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,6 +12,7 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.content.res.ColorStateList;
 import android.net.Uri;
@@ -202,18 +204,22 @@ public final class MainActivity extends Activity {
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
         startActivity(intent);
     }
+    @SuppressLint("MissingPermission") // hasBluetooth() guards access; revocation is caught below.
     private void selectKnownBuds() {
         if (!hasBluetooth() || !Prefs.address(this).isEmpty()) return;
-        BluetoothAdapter adapter = getSystemService(BluetoothManager.class).getAdapter();
+        BluetoothManager manager = getSystemService(BluetoothManager.class);
+        BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
         if (adapter == null || !adapter.isEnabled()) return;
-        BluetoothDevice found = null;
-        for (BluetoothDevice device : adapter.getBondedDevices()) {
-            if ("Xiaomi Buds 5".equalsIgnoreCase(device.getName())) {
-                if (found != null) return;
-                found = device;
+        try {
+            BluetoothDevice found = null;
+            for (BluetoothDevice device : adapter.getBondedDevices()) {
+                if ("Xiaomi Buds 5".equalsIgnoreCase(device.getName())) {
+                    if (found != null) return;
+                    found = device;
+                }
             }
-        }
-        if (found != null) { Prefs.choose(this, found.getName(), found.getAddress()); Prefs.log(this, "Выбраны сопряжённые Xiaomi Buds 5"); }
+            if (found != null) { Prefs.choose(this, found.getName(), found.getAddress()); Prefs.log(this, "Выбраны сопряжённые Xiaomi Buds 5"); }
+        } catch (SecurityException ignored) { update(); }
     }
     private void chooseDevice() {
         if (!hasBluetooth()) { requestBluetooth(); return; }
@@ -280,7 +286,7 @@ public final class MainActivity extends Activity {
     }
     private TextView label(String content, int size, int color, boolean bold) {
         TextView t = new TextView(this); t.setText(content); t.setTextSize(size); t.setTextColor(color);
-        if (bold) t.setTypeface(null, 1); return t;
+        if (bold) t.setTypeface(null, Typeface.BOLD); return t;
     }
     private void addSpace(LinearLayout page, View child, int top) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2); p.topMargin = dp(top); page.addView(child, p);

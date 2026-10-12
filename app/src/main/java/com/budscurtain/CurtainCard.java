@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -152,7 +153,7 @@ final class CurtainCard extends LinearLayout {
         view.setText(content);
         view.setTextSize(sp);
         view.setTextColor(color);
-        if (bold) view.setTypeface(null, 1);
+        if (bold) view.setTypeface(null, Typeface.BOLD);
         view.setIncludeFontPadding(false);
         return view;
     }

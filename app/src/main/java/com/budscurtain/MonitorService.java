@@ -1,5 +1,6 @@
 package com.budscurtain;
 
+import android.annotation.SuppressLint;
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -107,12 +108,15 @@ public final class MonitorService extends Service {
         }
     };
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag") // Flags overload exists only on API 33+.
     @Override public void onCreate() {
         super.onCreate();
         windows = (WindowManager)getSystemService(WINDOW_SERVICE);
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Наблюдение Buds 5", NotificationManager.IMPORTANCE_LOW));
-        registerReceiver(themeReceiver, new IntentFilter(THEME_CHANGED), Context.RECEIVER_NOT_EXPORTED);
+        if (Build.VERSION.SDK_INT >= 33)
+            registerReceiver(themeReceiver, new IntentFilter(THEME_CHANGED), Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(themeReceiver, new IntentFilter(THEME_CHANGED));
     }
 
     @Override public void onConfigurationChanged(Configuration configuration) {
@@ -180,6 +184,7 @@ public final class MonitorService extends Service {
         handler.postDelayed(expiry, 1000);
     }
 
+    @SuppressLint("MissingPermission") // begin() checks permission; stop/start are guarded against revocation.
     private void startBleScan() {
         if (!monitoring) return;
         handler.removeCallbacks(retryScan);
@@ -218,6 +223,7 @@ public final class MonitorService extends Service {
         }
     }
 
+    @SuppressLint("MissingPermission") // stopScan is best effort when permission changes.
     private void scheduleScanRetry(String reason, long minimumDelay) {
         if (!monitoring) return;
         if (scanner != null && callback != null) {
@@ -445,6 +451,7 @@ public final class MonitorService extends Service {
     }
     private int dp(int n) { return (int)(n * getResources().getDisplayMetrics().density + .5f); }
 
+    @SuppressLint("MissingPermission") // stopScan is best effort during teardown.
     @Override public void onDestroy() {
         monitoring = false; handler.removeCallbacksAndMessages(null);
         if (scanner != null && callback != null) try { scanner.stopScan(callback); } catch (Exception ignored) {}
