@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101010">
   <meta name="description" content="Карточка заряда Xiaomi Buds 5 на Android: открыл кейс — увидел заряд левого наушника, кейса и правого наушника.">
-  <title>Buds Curtain — заряд Xiaomi Buds 5 без лишних действий</title>
+  <title>Xiaomi Buds 5 Overlay — заряд Xiaomi Buds 5 без лишних действий</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css?v=2">
   <script src="script.js?v=2" defer></script>
@@ -13,8 +13,8 @@
 <body>
   <a class="skip" href="#main">К содержимому</a>
     <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="Buds Curtain, наверх"><span>BUDS<span class="wordmark-muted">/</span>CURTAIN<span class="wordmark-cursor">_</span></span></a>
-    <nav aria-label="Основная навигация"><a href="#preview">Карточка</a><a href="#details">Возможности</a><a href="#install">Установка</a><a class="nav-download" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.6">Скачать APK <span aria-hidden="true">↗</span></a></nav>
+    <a class="wordmark" href="#top" aria-label="Xiaomi Buds 5 Overlay, наверх"><span>BUDS<span class="wordmark-muted">/</span>OVERLAY<span class="wordmark-cursor">_</span></span></a>
+    <nav aria-label="Основная навигация"><a href="#preview">Карточка</a><a href="#details">Возможности</a><a href="#install">Установка</a><a class="nav-download" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7">Скачать APK <span aria-hidden="true">↗</span></a></nav>
   </header>
 
   <main id="main">
@@ -24,7 +24,7 @@
         <h1 id="hero-title">Открыл кейс.<br><em>Увидел заряд<span class="signal-stop">.</span></em></h1>
         <p class="hero-lead">Компактная карточка для Xiaomi Buds 5 появляется поверх текущего экрана, когда оба наушника в открытом кейсе. Закрыл кейс или вынул наушник — она плавно уходит вниз.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.6">Скачать APK 0.6.6 <span aria-hidden="true">↗</span></a>
+          <a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7">Скачать APK 0.6.7 <span aria-hidden="true">↗</span></a>
           <a class="button button-outline" href="https://github.com/cveloy102/buds-curtain/blob/main/docs/usage.md">Как установить <span aria-hidden="true">→</span></a>
         </div>
         <p class="access-note">Тестовая сборка из GitHub Releases. Установка и обновления подтверждаются средствами Android.</p>
@@ -73,16 +73,16 @@
     </section>
 
     <section class="install section-wrap" id="install" aria-labelledby="install-title">
-      <div class="install-head"><div><p class="eyebrow">[ 04 / START HERE ]</p><h2 id="install-title">Три шага.<br><em>И готово.</em></h2></div><a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.6">Открыть релиз <span aria-hidden="true">↗</span></a></div>
+      <div class="install-head"><div><p class="eyebrow">[ 04 / START HERE ]</p><h2 id="install-title">Три шага.<br><em>И готово.</em></h2></div><a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7">Открыть релиз <span aria-hidden="true">↗</span></a></div>
       <ol class="steps"><li><span>01</span><div><h3>Установи APK</h3><p>Скачай установочный файл из Assets релиза и открой его на телефоне.</p></div></li><li><span>02</span><div><h3>Дай два разрешения</h3><p>Разреши «Устройства поблизости» и показ поверх других приложений.</p></div></li><li><span>03</span><div><h3>Запусти наблюдение</h3><p>Выбери сопряжённые Buds 5, нажми «Запустить наблюдение» и открой кейс с двумя наушниками внутри.</p></div></li></ol>
       <a class="inline-link" href="https://github.com/cveloy102/buds-curtain/blob/main/docs/usage.md">Подробная инструкция и решение проблем <span aria-hidden="true">↗</span></a>
     </section>
 
     <section class="faq section-wrap" aria-labelledby="faq-title"><div><p class="eyebrow">[ 05 / FAQ ]</p><h2 id="faq-title">Коротко<br><em>о важном.</em></h2></div><div class="faq-list"><details><summary>Почему карточка иногда появляется не сразу?</summary><p>Сигнал от левого и правого наушников может прийти в разных Bluetooth-пакетах. Приложение дожидается подтверждения обоих, чтобы не показывать карточку ошибочно при использовании одного наушника.</p></details><details><summary>Работает ли с другими наушниками?</summary><p>Сейчас проверены Xiaomi Buds 5 на POCO F7 с Android 16 / HyperOS 3. Поддержка других моделей не заявлена.</p></details><details><summary>Что происходит с данными?</summary><p>Настройки и журнал хранятся на телефоне. В приложении нет интернет-разрешения или аналитики. <a href="https://github.com/cveloy102/buds-curtain/blob/main/docs/PRIVACY.md">Подробнее о данных и разрешениях ↗</a></p></details><details><summary>Что с работой в фоне?</summary><p>Наблюдение работает через foreground-службу. HyperOS может ограничивать фоновые процессы; при необходимости настрой автозапуск и ограничения батареи для приложения.</p></details></div></section>
 
-    <section class="final-cta section-wrap"><div><p class="eyebrow">[ BUDS CURTAIN / 0.6.6 ]</p><h2>Открыл кейс.<br><em>Увидел заряд.</em></h2></div><a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.6">Скачать тестовую сборку <span aria-hidden="true">↗</span></a></section>
+    <section class="final-cta section-wrap"><div><p class="eyebrow">[ XIAOMI BUDS 5 OVERLAY / 0.6.7 ]</p><h2>Открыл кейс.<br><em>Увидел заряд.</em></h2></div><a class="button button-primary" href="https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7">Скачать тестовую сборку <span aria-hidden="true">↗</span></a></section>
   </main>
 
-  <footer class="site-footer"><div class="wordmark"><span>BUDS<span class="wordmark-muted">/</span>CURTAIN<span class="wordmark-cursor">_</span></span></div><p>Неофициальное приложение для Xiaomi Buds 5.<br>Xiaomi и Fast Pair — обозначения соответствующих правообладателей.</p><div><a href="https://github.com/cveloy102/buds-curtain">Исходный код</a><a href="https://github.com/cveloy102/buds-curtain/blob/main/docs/usage.md">Инструкция</a><a href="https://github.com/cveloy102/buds-curtain/blob/main/docs/PRIVACY.md">Данные</a></div></footer>
+  <footer class="site-footer"><div class="wordmark"><span>BUDS<span class="wordmark-muted">/</span>OVERLAY<span class="wordmark-cursor">_</span></span></div><p>Неофициальное приложение для Xiaomi Buds 5.<br>Xiaomi и Fast Pair — обозначения соответствующих правообладателей.</p><div><a href="https://github.com/cveloy102/buds-curtain">Исходный код</a><a href="https://github.com/cveloy102/buds-curtain/blob/main/docs/usage.md">Инструкция</a><a href="https://github.com/cveloy102/buds-curtain/blob/main/docs/PRIVACY.md">Данные</a></div></footer>
 </body>
 </html>

@@ -155,7 +155,7 @@ public final class MonitorService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         return new Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
-            .setContentTitle("Xiaomi Buds 5 работает")
+            .setContentTitle("Xiaomi Buds 5 Overlay работает")
             .setContentText("Наблюдение за Xiaomi Buds 5")
             .setContentIntent(pi).setOngoing(true).build();
     }

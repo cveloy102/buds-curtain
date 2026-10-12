@@ -70,9 +70,9 @@ public final class MainActivity extends Activity {
         scroll.addView(page);
         setContentView(scroll);
 
-        TextView heading = label("Xiaomi Buds 5", 29, ink, true);
+        TextView heading = label("Xiaomi Buds 5 Overlay", 26, ink, true);
         page.addView(heading);
-        TextView sub = label("Карточка заряда · 0.6.6", 14, muted, false);
+        TextView sub = label("Карточка заряда · 0.6.7", 14, muted, false);
         addSpace(page, sub, 5);
 
         deviceText = label("", 15, ink, false);
@@ -273,7 +273,7 @@ public final class MainActivity extends Activity {
     }
     private void copyLog() {
         String log = Prefs.of(this).getString("log", "");
-        ((ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Xiaomi Buds 5 log", log));
+        ((ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Xiaomi Buds 5 Overlay log", log));
         toast("Журнал скопирован");
     }
     private void button(LinearLayout page, String title, Runnable action) {
