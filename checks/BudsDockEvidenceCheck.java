@@ -3,10 +3,10 @@ package com.budscurtain;
 public final class BudsDockEvidenceCheck {
     public static void main(String[] args) {
         BudsDockEvidence dock = new BudsDockEvidence();
-        FastPairBattery left = packet("10405204380221FA1533E47F3A");
-        FastPairBattery right = packet("10405204380221FA15337FE43A");
-        FastPairBattery partialHide = packet("10405204380221FA1534E47F3A");
-        FastPairBattery fullHide = packet("10405204380221FA1534E4E43A");
+        FastPairBattery left = packet("10400102030421050633E47F3A");
+        FastPairBattery right = packet("104001020304210506337FE43A");
+        FastPairBattery partialHide = packet("10400102030421050634E47F3A");
+        FastPairBattery fullHide = packet("10400102030421050634E4E43A");
         CurtainState state = new CurtainState();
         require(state.accept(left.show, 1000, 1000));
         dock.observe(left, 1000);
@@ -27,7 +27,7 @@ public final class BudsDockEvidenceCheck {
         require(!dock.bothDocked(16001));
 
         dock.reset();
-        FastPairBattery worn = packet("10405204380221FA15337F577F");
+        FastPairBattery worn = packet("104001020304210506337F577F");
         for (long t = 10000; t < 30000; t += 2000) {
             dock.observe(worn, t);
             require(!dock.bothDocked(t));
@@ -35,7 +35,7 @@ public final class BudsDockEvidenceCheck {
         dock.observe(left, 30000);
         dock.observe(right, 30300);
         require(dock.bothDocked(30300));
-        dock.observe(packet("10405204380221FA153364643A"), 30600);
+        dock.observe(packet("1040010203042105063364643A"), 30600);
         require(!dock.bothDocked(30600));
         dock.observe(fullHide, 31000);
         dock.reset();
