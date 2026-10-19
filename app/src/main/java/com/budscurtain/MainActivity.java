@@ -72,7 +72,7 @@ public final class MainActivity extends Activity {
 
         TextView heading = label("Xiaomi Buds 5 Overlay", 26, ink, true);
         page.addView(heading);
-        TextView sub = label("Карточка заряда · 0.6.7", 14, muted, false);
+        TextView sub = label("Карточка заряда · 0.6.8", 14, muted, false);
         addSpace(page, sub, 5);
 
         deviceText = label("", 15, ink, false);

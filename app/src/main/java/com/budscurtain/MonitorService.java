@@ -54,6 +54,7 @@ public final class MonitorService extends Service {
     private BluetoothLeScanner scanner;
     private ScanCallback callback;
     private int scanFailures;
+    private long lastScanStartedAt;
     private final Runnable retryScan = this::startBleScan;
     private WindowManager windows;
     private CurtainCard card;
@@ -87,6 +88,20 @@ public final class MonitorService extends Service {
     };
     private final BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) {
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
+                int adapterState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                if (adapterState == BluetoothAdapter.STATE_TURNING_OFF || adapterState == BluetoothAdapter.STATE_OFF) {
+                    state.disconnected(SystemClock.elapsedRealtime());
+                    if (!demo) hideCard("Bluetooth выключен");
+                    clearBattery();
+                    scheduleScanRetry("Bluetooth выключен; ожидаю включения", 30000);
+                } else if (adapterState == BluetoothAdapter.STATE_ON && monitoring) {
+                    scanFailures = 0;
+                    handler.removeCallbacks(retryScan);
+                    handler.postDelayed(retryScan, Math.max(1000, lastScanStartedAt + 6000 - SystemClock.elapsedRealtime()));
+                }
+                return;
+            }
             BluetoothDevice device = Build.VERSION.SDK_INT >= 33
                 ? intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class)
                 : intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -135,9 +150,16 @@ public final class MonitorService extends Service {
             handler.removeCallbacks(endDemo);
             long demoDuration = intent == null ? 5000 : intent.getLongExtra("demo_duration_ms", 5000);
             handler.postDelayed(endDemo, Math.max(1000, Math.min(demoDuration, 15000)));
-            return START_NOT_STICKY;
+            return monitoring ? START_STICKY : START_NOT_STICKY;
         }
         if (!monitoring) begin();
+        else if (START.equals(action) && SystemClock.elapsedRealtime() - lastScanStartedAt > 30000 &&
+                (lastBatteryAt == 0 || SystemClock.elapsedRealtime() - lastBatteryAt > CurtainState.STALE_MS)) {
+            // START comes from the app screen. Never tear down a scan merely because
+            // the case is closed: HyperOS can deny its replacement in the background.
+            Prefs.log(this, "Приложение открыто; обновляю регистрацию BLE");
+            startBleScan();
+        }
         return monitoring ? START_STICKY : START_NOT_STICKY;
     }
 
@@ -167,7 +189,7 @@ public final class MonitorService extends Service {
         }
         BluetoothManager manager = getSystemService(BluetoothManager.class);
         BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
-        if (adapter == null || !adapter.isEnabled()) { Prefs.log(this, "Bluetooth выключен"); stopSelf(); return; }
+        if (adapter == null) { Prefs.log(this, "Bluetooth недоступен"); stopSelf(); return; }
         String wanted = Prefs.address(this);
         if (wanted.isEmpty()) { Prefs.log(this, "Наушники не выбраны"); stopSelf(); return; }
         try { selected = adapter.getRemoteDevice(wanted); } catch (IllegalArgumentException ex) { Prefs.log(this, "Неверный адрес устройства"); stopSelf(); return; }
@@ -176,6 +198,7 @@ public final class MonitorService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(connectionReceiver, filter, Context.RECEIVER_EXPORTED);
         else registerReceiver(connectionReceiver, filter);
         receiverRegistered = true;
@@ -213,6 +236,7 @@ public final class MonitorService extends Service {
         };
         ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
         try {
+            lastScanStartedAt = SystemClock.elapsedRealtime();
             scanner.startScan(Arrays.asList(
                 new ScanFilter.Builder().setDeviceAddress(Prefs.address(this)).build(),
                 new ScanFilter.Builder().setServiceData(FAST_PAIR, new byte[0]).build()), settings, callback);
