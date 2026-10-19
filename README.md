@@ -6,9 +6,9 @@
 
 Неофициальное Android-приложение для Xiaomi Buds 5.
 
-**Android 12+ · тестовая версия 0.6.7**
+**Android 12+ · тестовая версия 0.6.8**
 
-[**Сайт**](https://cveloy102.github.io/buds-curtain/) · [**Скачать APK**](https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7) · [**Инструкция**](docs/usage.md) · [**История версий**](CHANGELOG.md)
+[**Сайт**](https://cveloy102.github.io/buds-curtain/) · [**Скачать APK**](https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.8) · [**Инструкция**](docs/usage.md) · [**История версий**](CHANGELOG.md)
 
 <img src="design/assets/buds5-graphite-trio-v6.webp" width="660" alt="Иллюстрация Xiaomi Buds 5 Graphite Black: два наушника и кейс Xiaomi">
 
@@ -18,7 +18,7 @@
 
 **Заряд Xiaomi Buds 5 — в карточке поверх текущего экрана.** Приложение наблюдает Bluetooth-сигналы наушников, показывает заряд левого наушника, кейса и правого наушника и скрывает карточку при изменении состояния.
 
-[Скачать APK 0.6.7](https://github.com/cveloy102/buds-curtain/releases/download/v0.6.7/XiaomiBuds5Overlay-0.6.7.apk) · [Инструкция и FAQ](docs/usage.md) · [Данные и разрешения](docs/PRIVACY.md) · [Сборка](docs/DEVELOPMENT.md)
+[Скачать APK 0.6.8](https://github.com/cveloy102/buds-curtain/releases/download/v0.6.8/XiaomiBuds5Overlay-0.6.8.apk) · [Инструкция и FAQ](docs/usage.md) · [Данные и разрешения](docs/PRIVACY.md) · [Сборка](docs/DEVELOPMENT.md)
 
 ## Карточка наушников
 
@@ -38,7 +38,7 @@
 
 ## Начало работы
 
-1. Установите APK из [релиза 0.6.7](https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.7).
+1. Установите APK из [релиза 0.6.8](https://github.com/cveloy102/buds-curtain/releases/tag/v0.6.8).
 2. Выдайте разрешения **Устройства поблизости** и **Показ поверх других приложений**.
 3. Выберите сопряжённые Xiaomi Buds 5 и нажмите **Запустить наблюдение**.
 4. При включённом экране откройте кейс с обоими наушниками внутри.
@@ -58,12 +58,13 @@
 
 Для разработчиков: [сборка и выпуск](docs/DEVELOPMENT.md) · [участие в проекте](CONTRIBUTING.md) · [безопасность](SECURITY.md).
 
-## В версии 0.6.7
+## В версии 0.6.8
 
-- Название приложения изменено на **Xiaomi Buds 5 Overlay**.
-
-- Увеличено окно объединения раздельных сигналов до шести секунд.
-- Добавлено видимое состояние восстановления Bluetooth.
-- Сохранены фильтрация ложных показов и удаление overlay после скрытия.
+- Сканирование восстанавливается после выключения и включения Bluetooth.
+- Подключение наушников после долгого отсутствия BLE-сигналов повторно регистрирует сканер.
+- Добавлена проверка получения пакетов и ограниченное число повторов после тихого отказа HyperOS.
+- Запуск при выключенном Bluetooth оставляет наблюдение ждать включения адаптера.
+- Проверка дизайна сохраняет автоматическое восстановление работающей службы.
+- Сохранены экономный режим, фильтрация ложных показов и удаление overlay после скрытия.
 
 Подробнее: [CHANGELOG](CHANGELOG.md). Результаты проверок: [OBSERVATIONS](OBSERVATIONS.md).
