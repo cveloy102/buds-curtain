@@ -55,24 +55,7 @@ public final class MonitorService extends Service {
     private ScanCallback callback;
     private int scanFailures;
     private long lastScanStartedAt;
-    private long lastScanResultAt;
-    private int unconfirmedScans;
     private final Runnable retryScan = this::startBleScan;
-    private final Runnable recoverSilentScan = () -> {
-        if (this.monitoring && SystemClock.elapsedRealtime() -
-                Math.max(lastScanStartedAt, lastScanResultAt) > 30000) {
-            Prefs.log(this, "Нет BLE-сигналов при подключении; восстанавливаю сканирование");
-            unconfirmedScans = 0;
-            startBleScan();
-        }
-    };
-    private final Runnable verifyScan = () -> {
-        if (!this.monitoring || callback == null || lastScanResultAt >= lastScanStartedAt) return;
-        // HyperOS can reject a background start without calling onScanFailed.
-        // Retry briefly, then wait for a new connection or the app to be opened.
-        if (++unconfirmedScans < 3) scheduleScanRetry("Нет BLE-пакетов после запуска", 10000);
-        else Prefs.log(this, "BLE пока не подтвердил работу; ожидаю подключение или открытие приложения");
-    };
     private WindowManager windows;
     private CurtainCard card;
     private WindowManager.LayoutParams cardParams;
@@ -105,11 +88,6 @@ public final class MonitorService extends Service {
     };
     private final BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_SCREEN_ON.equals(intent.getAction()) || Intent.ACTION_USER_PRESENT.equals(intent.getAction())) {
-                handler.removeCallbacks(recoverSilentScan);
-                handler.postDelayed(recoverSilentScan, 2000);
-                return;
-            }
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                 int adapterState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 if (adapterState == BluetoothAdapter.STATE_TURNING_OFF || adapterState == BluetoothAdapter.STATE_OFF) {
@@ -118,11 +96,9 @@ public final class MonitorService extends Service {
                     clearBattery();
                     scheduleScanRetry("Bluetooth выключен; ожидаю включения", 30000);
                 } else if (adapterState == BluetoothAdapter.STATE_ON && monitoring) {
-                    Prefs.log(context, "Bluetooth включён; восстанавливаю BLE-сканирование");
                     scanFailures = 0;
-                    unconfirmedScans = 0;
                     handler.removeCallbacks(retryScan);
-                    handler.postDelayed(retryScan, Math.max(0, lastScanStartedAt + 6000 - SystemClock.elapsedRealtime()));
+                    handler.postDelayed(retryScan, Math.max(1000, lastScanStartedAt + 6000 - SystemClock.elapsedRealtime()));
                 }
                 return;
             }
@@ -133,11 +109,6 @@ public final class MonitorService extends Service {
             if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
                 state.connected();
                 Prefs.log(context, "Bluetooth подключён; ожидаю сигнал кейса");
-                // A Bluetooth stack restart can silently discard the scanner registration.
-                // Re-register on a real connection after a long silence, without polling.
-                // During profile negotiation HyperOS temporarily rejects background starts.
-                handler.removeCallbacks(recoverSilentScan);
-                handler.postDelayed(recoverSilentScan, 2000);
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(intent.getAction())) {
                 Prefs.log(context, "Отключение: " + safeName(device));
                 state.disconnected(SystemClock.elapsedRealtime());
@@ -182,9 +153,12 @@ public final class MonitorService extends Service {
             return monitoring ? START_STICKY : START_NOT_STICKY;
         }
         if (!monitoring) begin();
-        else {
-            unconfirmedScans = 0;
-            recoverSilentScan.run();
+        else if (START.equals(action) && SystemClock.elapsedRealtime() - lastScanStartedAt > 30000 &&
+                (lastBatteryAt == 0 || SystemClock.elapsedRealtime() - lastBatteryAt > CurtainState.STALE_MS)) {
+            // START comes from the app screen. Never tear down a scan merely because
+            // the case is closed: HyperOS can deny its replacement in the background.
+            Prefs.log(this, "Приложение открыто; обновляю регистрацию BLE");
+            startBleScan();
         }
         return monitoring ? START_STICKY : START_NOT_STICKY;
     }
@@ -225,8 +199,6 @@ public final class MonitorService extends Service {
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_USER_PRESENT);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(connectionReceiver, filter, Context.RECEIVER_EXPORTED);
         else registerReceiver(connectionReceiver, filter);
         receiverRegistered = true;
@@ -239,7 +211,6 @@ public final class MonitorService extends Service {
     private void startBleScan() {
         if (!monitoring) return;
         handler.removeCallbacks(retryScan);
-        handler.removeCallbacks(verifyScan);
         if (scanner != null && callback != null) {
             try { scanner.stopScan(callback); } catch (Exception ignored) {}
         }
@@ -253,11 +224,6 @@ public final class MonitorService extends Service {
                 handler.post(() -> {
                     if (callback != this) return;
                     scanFailures = 0;
-                    unconfirmedScans = 0;
-                    lastScanResultAt = SystemClock.elapsedRealtime();
-                    handler.removeCallbacks(verifyScan);
-                    if (!Prefs.of(MonitorService.this).getBoolean("scan_confirmed", false))
-                        Prefs.of(MonitorService.this).edit().putBoolean("scan_confirmed", true).apply();
                     observe(result);
                 });
             }
@@ -271,12 +237,10 @@ public final class MonitorService extends Service {
         ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
         try {
             lastScanStartedAt = SystemClock.elapsedRealtime();
-            scanner.startScan(Prefs.of(this).getBoolean("diagnostic", false)
-                ? Arrays.asList(new ScanFilter.Builder().build()) : Arrays.asList(
+            scanner.startScan(Arrays.asList(
                 new ScanFilter.Builder().setDeviceAddress(Prefs.address(this)).build(),
                 new ScanFilter.Builder().setServiceData(FAST_PAIR, new byte[0]).build()), settings, callback);
-            Prefs.of(this).edit().putBoolean("scan_active", true).putBoolean("scan_confirmed", false).apply();
-            handler.postDelayed(verifyScan, 15000);
+            Prefs.of(this).edit().putBoolean("scan_active", true).apply();
             Prefs.log(this, "Фильтр BLE запущен в экономном режиме");
         } catch (Exception ex) {
             scheduleScanRetry("Не удалось запустить BLE: " + ex.getClass().getSimpleName(), 0);
@@ -286,13 +250,12 @@ public final class MonitorService extends Service {
     @SuppressLint("MissingPermission") // stopScan is best effort when permission changes.
     private void scheduleScanRetry(String reason, long minimumDelay) {
         if (!monitoring) return;
-        handler.removeCallbacks(verifyScan);
         if (scanner != null && callback != null) {
             try { scanner.stopScan(callback); } catch (Exception ignored) {}
         }
         callback = null;
         scanner = null;
-        Prefs.of(this).edit().putBoolean("scan_active", false).putBoolean("scan_confirmed", false).apply();
+        Prefs.of(this).edit().putBoolean("scan_active", false).apply();
         long backoff = Math.min(60000, 5000L << Math.min(scanFailures++, 3));
         long delay = Math.max(minimumDelay, backoff);
         Prefs.log(this, reason + "; повтор через " + delay / 1000 + " с");

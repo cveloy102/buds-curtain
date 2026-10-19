@@ -173,15 +173,13 @@ public final class MainActivity extends Activity {
         boolean overlay = Settings.canDrawOverlays(this);
         boolean active = Prefs.of(this).getBoolean("active", false);
         boolean scanning = Prefs.of(this).getBoolean("scan_active", active);
-        boolean scanConfirmed = Prefs.of(this).getBoolean("scan_confirmed", false);
         long seen = Prefs.of(this).getLong("last_signal", 0);
         long seconds = Math.max(0, (System.currentTimeMillis() - seen) / 1000);
         String signal = seen == 0 ? "Открой кейс рядом с телефоном" :
             (seconds <= 8 && active ? "Свежий сигнал: " : "Последние данные (" + seconds + " с назад): ") + Prefs.of(this).getString("last_levels", "—");
         stateText.setText("Bluetooth: " + (hasBluetooth() ? "разрешён" : "нужно разрешение") +
             "  ·  поверх окон: " + (overlay ? "разрешено" : "не разрешено") +
-            "\nНаблюдение: " + (!active ? "остановлено" : !scanning ? "восстанавливает Bluetooth" :
-                scanConfirmed ? "запущено" : "ожидает первый BLE-сигнал") +
+            "\nНаблюдение: " + (!active ? "остановлено" : scanning ? "запущено" : "восстанавливает Bluetooth") +
             "  ·  диагностика: " + (Prefs.of(this).getBoolean("diagnostic", false) ? "включена" : "выключена") + "\n" + signal);
         String log = Prefs.of(this).getString("log", "Пока нет событий");
         if (!log.equals(renderedLog)) {
