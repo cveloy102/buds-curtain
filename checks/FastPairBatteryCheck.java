@@ -9,6 +9,12 @@ public final class FastPairBatteryCheck {
         // Synthetic service data matching the observed Buds 5 field layout.
         byte[] synthetic = hex("10400102030421050633E4E42B");
         require(FastPairBattery.parse(synthetic) == null);
+        // Selected Buds renamed to "Buds": no display name is needed to decode.
+        FastPairBattery renamed = FastPairBattery.parseSelectedBuds(hex("10400043160321C6E53364647F"));
+        require(renamed != null && renamed.show && renamed.left == 100 && renamed.right == 100 && renamed.cradle == null);
+        require(!renamed.leftCharging && !renamed.rightCharging);
+        require(FastPairBattery.parseSelectedBuds(synthetic).cradle == 43);
+        require(FastPairBattery.parseSelectedBuds(hex("2040010203042105063364642B")) == null);
         FastPairBattery buds = FastPairBattery.parse(synthetic, true);
         require(buds != null && buds.show && buds.left == 100 && buds.right == 100 && buds.cradle == 43);
         require(buds.leftCharging && buds.rightCharging && !buds.caseCharging);

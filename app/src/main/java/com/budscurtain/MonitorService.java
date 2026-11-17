@@ -46,16 +46,26 @@ public final class MonitorService extends Service {
     static final String START = "com.budscurtain.START";
     static final String STOP = "com.budscurtain.STOP";
     static final String DEMO = "com.budscurtain.DEMO";
+    static final String RESUME = "com.budscurtain.RESUME";
     static final String THEME_CHANGED = "com.budscurtain.THEME_CHANGED";
     private static final String CHANNEL = "monitor";
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Map<String, Long> logged = new HashMap<>();
     private final Map<String, String> lastPayload = new HashMap<>();
+    static volatile MonitorService instance;
     private BluetoothLeScanner scanner;
-    private ScanCallback callback;
+    private PendingIntent scanIntent;
     private int scanFailures;
     private long lastScanStartedAt;
     private final Runnable retryScan = this::startBleScan;
+    // HyperOS downgrades a background scan to low power after 100 s and to a
+    // 0.5 s-per-10 s window after 300 s; a fresh registration resets both.
+    private static final long SCAN_REFRESH_MS = 240000;
+    private final Runnable refreshScan = () -> {
+        // Leave a scan that is delivering packets alone: the case is in use.
+        if (this.lastBatteryAt > 0) scheduleScanRefresh(CurtainState.STALE_MS);
+        else startBleScan();
+    };
     private WindowManager windows;
     private CurtainCard card;
     private WindowManager.LayoutParams cardParams;
@@ -79,8 +89,7 @@ public final class MonitorService extends Service {
     private final Runnable expiry = new Runnable() {
         @Override public void run() {
             long now = SystemClock.elapsedRealtime();
-            if (!demo && visible && (!state.wantsCard(now) ||
-                ("Xiaomi Buds 5".equalsIgnoreCase(Prefs.name(MonitorService.this)) && !dock.bothDocked(now))))
+            if (!demo && visible && (!state.wantsCard(now) || !dock.bothDocked(now)))
                 hideCard("Сигнал кейса закончился");
             if (lastBatteryAt > 0 && now - lastBatteryAt > CurtainState.STALE_MS) clearBattery();
             if (monitoring) handler.postDelayed(this, 1000);
@@ -88,6 +97,12 @@ public final class MonitorService extends Service {
     };
     private final BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                // Handler timers do not advance in deep sleep; catch up on wake.
+                if (scanIntent != null && lastBatteryAt == 0 &&
+                    SystemClock.elapsedRealtime() - lastScanStartedAt >= SCAN_REFRESH_MS) startBleScan();
+                return;
+            }
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                 int adapterState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 if (adapterState == BluetoothAdapter.STATE_TURNING_OFF || adapterState == BluetoothAdapter.STATE_OFF) {
@@ -126,6 +141,7 @@ public final class MonitorService extends Service {
     @SuppressLint("UnspecifiedRegisterReceiverFlag") // Flags overload exists only on API 33+.
     @Override public void onCreate() {
         super.onCreate();
+        instance = this;
         windows = (WindowManager)getSystemService(WINDOW_SERVICE);
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Наблюдение Buds 5", NotificationManager.IMPORTANCE_LOW));
@@ -155,8 +171,7 @@ public final class MonitorService extends Service {
         if (!monitoring) begin();
         else if (START.equals(action) && SystemClock.elapsedRealtime() - lastScanStartedAt > 30000 &&
                 (lastBatteryAt == 0 || SystemClock.elapsedRealtime() - lastBatteryAt > CurtainState.STALE_MS)) {
-            // START comes from the app screen. Never tear down a scan merely because
-            // the case is closed: HyperOS can deny its replacement in the background.
+            // START comes from the app screen: refresh a quiet scan right away.
             Prefs.log(this, "Приложение открыто; обновляю регистрацию BLE");
             startBleScan();
         }
@@ -199,6 +214,7 @@ public final class MonitorService extends Service {
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(connectionReceiver, filter, Context.RECEIVER_EXPORTED);
         else registerReceiver(connectionReceiver, filter);
         receiverRegistered = true;
@@ -211,55 +227,80 @@ public final class MonitorService extends Service {
     private void startBleScan() {
         if (!monitoring) return;
         handler.removeCallbacks(retryScan);
-        if (scanner != null && callback != null) {
-            try { scanner.stopScan(callback); } catch (Exception ignored) {}
-        }
-        callback = null;
+        handler.removeCallbacks(refreshScan);
+        boolean refresh = scanIntent != null;
+        stopBleScan();
         BluetoothManager manager = getSystemService(BluetoothManager.class);
         BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
         scanner = adapter == null || !adapter.isEnabled() ? null : adapter.getBluetoothLeScanner();
         if (scanner == null) { scheduleScanRetry("Bluetooth-сканер недоступен", 30000); return; }
-        callback = new ScanCallback() {
-            @Override public void onScanResult(int callbackType, ScanResult result) {
-                handler.post(() -> {
-                    if (callback != this) return;
-                    scanFailures = 0;
-                    observe(result);
-                });
-            }
-            @Override public void onScanFailed(int errorCode) {
-                handler.post(() -> {
-                    if (callback == this) scheduleScanRetry("Ошибка BLE сканирования: " + errorCode,
-                        errorCode == ScanCallback.SCAN_FAILED_SCANNING_TOO_FREQUENTLY ? 60000 : 0);
-                });
-            }
-        };
         ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
+        // A PendingIntent scan is held by the system. HyperOS silently refuses to
+        // start a listener-based scan requested while the app is in the background
+        // (after a Bluetooth restart, for instance), but starts this kind.
+        PendingIntent target = PendingIntent.getBroadcast(this, 1,
+            new Intent(this, ScanReceiver.class).setAction(ScanReceiver.ACTION),
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        // The system keeps this scan across a process restart and ignores a second
+        // start for the same PendingIntent, so always drop the old registration.
+        try { scanner.stopScan(target); } catch (Exception ignored) {}
         try {
             lastScanStartedAt = SystemClock.elapsedRealtime();
-            scanner.startScan(Arrays.asList(
+            int code = scanner.startScan(Arrays.asList(
                 new ScanFilter.Builder().setDeviceAddress(Prefs.address(this)).build(),
-                new ScanFilter.Builder().setServiceData(FAST_PAIR, new byte[0]).build()), settings, callback);
+                new ScanFilter.Builder().setServiceData(FAST_PAIR, new byte[0]).build()), settings, target);
+            if (code != 0) {
+                scheduleScanRetry("Ошибка BLE сканирования: " + code,
+                    code == ScanCallback.SCAN_FAILED_SCANNING_TOO_FREQUENTLY ? 60000 : 0);
+                return;
+            }
+            scanIntent = target;
             Prefs.of(this).edit().putBoolean("scan_active", true).apply();
-            Prefs.log(this, "Фильтр BLE запущен в экономном режиме");
+            if (!refresh) Prefs.log(this, "Фильтр BLE запущен в экономном режиме");
+            scheduleScanRefresh(SCAN_REFRESH_MS);
         } catch (Exception ex) {
             scheduleScanRetry("Не удалось запустить BLE: " + ex.getClass().getSimpleName(), 0);
         }
     }
 
+    private void scheduleScanRefresh(long delay) {
+        handler.removeCallbacks(refreshScan);
+        if (monitoring) handler.postDelayed(refreshScan, delay);
+    }
+
     @SuppressLint("MissingPermission") // stopScan is best effort when permission changes.
+    private void stopBleScan() {
+        if (scanner != null && scanIntent != null) {
+            try { scanner.stopScan(scanIntent); } catch (Exception ignored) {}
+        }
+        scanIntent = null;
+    }
+
+    void onSystemScanResult(ScanResult result) {
+        handler.post(() -> {
+            if (scanIntent == null) return;
+            scanFailures = 0;
+            observe(result);
+        });
+    }
+
+    void onSystemScanFailed(int errorCode) {
+        handler.post(() -> {
+            if (scanIntent != null) scheduleScanRetry("Ошибка BLE сканирования: " + errorCode,
+                errorCode == ScanCallback.SCAN_FAILED_SCANNING_TOO_FREQUENTLY ? 60000 : 0);
+        });
+    }
+
     private void scheduleScanRetry(String reason, long minimumDelay) {
         if (!monitoring) return;
-        if (scanner != null && callback != null) {
-            try { scanner.stopScan(callback); } catch (Exception ignored) {}
-        }
-        callback = null;
+        stopBleScan();
         scanner = null;
         Prefs.of(this).edit().putBoolean("scan_active", false).apply();
         long backoff = Math.min(60000, 5000L << Math.min(scanFailures++, 3));
         long delay = Math.max(minimumDelay, backoff);
         Prefs.log(this, reason + "; повтор через " + delay / 1000 + " с");
         handler.removeCallbacks(retryScan);
+        handler.removeCallbacks(refreshScan);
         handler.postDelayed(retryScan, delay);
     }
 
@@ -284,13 +325,14 @@ public final class MonitorService extends Service {
             }
         }
         if (!match) return;
-        boolean buds5 = "Xiaomi Buds 5".equalsIgnoreCase(Prefs.name(this));
-        FastPairBattery battery = FastPairBattery.parse(record == null ? null : record.getServiceData(FAST_PAIR), buds5);
+        // The selected address identifies these Buds; Bluetooth aliases are editable.
+        // Never enable this compatibility parser for nearby, unselected devices.
+        FastPairBattery battery = FastPairBattery.parseSelectedBuds(record == null ? null : record.getServiceData(FAST_PAIR));
         if (battery == null) return;
         long timestamp = result.getTimestampNanos() / 1000000;
         // A partial hide can alternate with a partial show while the case is open.
         // The complete hide packet still closes the card immediately.
-        boolean partialHide = buds5 && !battery.show && battery.cradle != null &&
+        boolean partialHide = !battery.show && battery.cradle != null &&
             (battery.left == null || battery.right == null) &&
             (battery.leftCharging || battery.rightCharging);
         if (partialHide) {
@@ -298,15 +340,10 @@ public final class MonitorService extends Service {
         } else if (!state.accept(battery.show, timestamp, now)) return;
         Integer oldLeft = leftBattery, oldRight = rightBattery, oldCase = caseBattery;
         boolean oldLeftCharging = leftCharging, oldRightCharging = rightCharging, oldCaseCharging = caseCharging;
-        if (buds5) {
-            if (!battery.show && !partialHide) dock.reset();
-            else dock.observe(battery, now);
-            leftBattery = dock.left; rightBattery = dock.right; caseBattery = dock.cradle;
-            leftCharging = dock.leftCharging; rightCharging = dock.rightCharging; caseCharging = dock.caseCharging;
-        } else {
-            leftBattery = battery.left; rightBattery = battery.right; caseBattery = battery.cradle;
-            leftCharging = battery.leftCharging; rightCharging = battery.rightCharging; caseCharging = battery.caseCharging;
-        }
+        if (!battery.show && !partialHide) dock.reset();
+        else dock.observe(battery, now);
+        leftBattery = dock.left; rightBattery = dock.right; caseBattery = dock.cradle;
+        leftCharging = dock.leftCharging; rightCharging = dock.rightCharging; caseCharging = dock.caseCharging;
         boolean levelsChanged = !Objects.equals(oldLeft, leftBattery) || !Objects.equals(oldRight, rightBattery) ||
             !Objects.equals(oldCase, caseBattery) || oldLeftCharging != leftCharging ||
             oldRightCharging != rightCharging || oldCaseCharging != caseCharging;
@@ -327,7 +364,7 @@ public final class MonitorService extends Service {
                 .putBoolean("case_show", battery.show).apply();
         }
         if (demo) return;
-        if (buds5 && !dock.bothDocked(now)) {
+        if (!dock.bothDocked(now)) {
             hideCard("Нет подтверждения, что оба наушника в кейсе");
             return;
         }
@@ -478,7 +515,8 @@ public final class MonitorService extends Service {
     @SuppressLint("MissingPermission") // stopScan is best effort during teardown.
     @Override public void onDestroy() {
         monitoring = false; handler.removeCallbacksAndMessages(null);
-        if (scanner != null && callback != null) try { scanner.stopScan(callback); } catch (Exception ignored) {}
+        stopBleScan();
+        instance = null;
         if (receiverRegistered) try { unregisterReceiver(connectionReceiver); } catch (Exception ignored) {}
         try { unregisterReceiver(themeReceiver); } catch (Exception ignored) {}
         if (card != null) card.animate().cancel();

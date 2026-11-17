@@ -20,6 +20,11 @@ final class FastPairBattery {
         return parse(data, false);
     }
 
+    /** Call only after matching the address of the user's selected Buds 5. */
+    static FastPairBattery parseSelectedBuds(byte[] data) {
+        return parse(data, true);
+    }
+
     static FastPairBattery parse(byte[] data, boolean allowBuds5Header) {
         if (data == null || data.length < 9) return null;
         // Google documents 0x00. Our selected Xiaomi Buds 5 advertises 0x10
