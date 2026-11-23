@@ -10,7 +10,7 @@
 
 **Android 12+ · тестовая версия 0.7.1**
 
-[**Сайт**](https://cveloy102.github.io/buds-curtain/) · [**Скачать APK**](https://github.com/cveloy102/buds-curtain/releases/tag/v0.7.1) · [**Инструкция**](docs/usage.md) · [**История версий**](CHANGELOG.md)
+[**Сайт**](https://cveloy102.github.io/buds-curtain/) · [**Скачать тестовый APK**](https://github.com/cveloy102/buds-curtain/releases/download/v0.7.1/XiaomiBuds5Overlay-0.7.1.apk) · [**Инструкция**](docs/usage.md) · [**История версий**](CHANGELOG.md) · [Каталог приложений](https://cveloy102.github.io/#buds)
 
 <img src="design/assets/buds5-graphite-trio-v6.webp" width="660" alt="Иллюстрация Xiaomi Buds 5 Graphite Black: два наушника и кейс Xiaomi">
 
