@@ -67,7 +67,7 @@ public final class MonitorService extends Service {
         else startBleScan();
     };
     private WindowManager windows;
-    private CurtainCard card;
+    private OverlayCard card;
     private WindowManager.LayoutParams cardParams;
     private boolean cardAttached;
     private long animationEpoch;
@@ -209,7 +209,6 @@ public final class MonitorService extends Service {
         if (wanted.isEmpty()) { Prefs.log(this, "Наушники не выбраны"); stopSelf(); return; }
         try { selected = adapter.getRemoteDevice(wanted); } catch (IllegalArgumentException ex) { Prefs.log(this, "Неверный адрес устройства"); stopSelf(); return; }
         monitoring = true;
-        if (card == null) card = new CurtainCard(this);
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
@@ -413,8 +412,8 @@ public final class MonitorService extends Service {
             catch (Exception ex) { Prefs.log(this, "Ошибка overlay: " + ex.getClass().getSimpleName()); return; }
         }
         if (demo && leftBattery == null && rightBattery == null && caseBattery == null)
-            card.setLevels(100, 100, 64, true, true, false, "Пример отображения");
-        else updateCard(demo ? "Пример отображения" : "Кейс открыт · рядом");
+            card.setLevels(100, 100, 64, true, true, false, OverlayCard.PREVIEW_MESSAGE);
+        else updateCard(demo ? OverlayCard.PREVIEW_MESSAGE : "Кейс открыт · рядом");
         long epoch = ++animationEpoch;
         card.animate().cancel();
         visible = true;
@@ -429,8 +428,13 @@ public final class MonitorService extends Service {
 
     private boolean attachCard() {
         if (cardAttached) return true;
-        if (card == null) card = new CurtainCard(this);
-        cardParams = new WindowManager.LayoutParams(getResources().getDisplayMetrics().widthPixels - dp(32), -2,
+        boolean showcase = Prefs.showcaseCard(this);
+        if (card == null || showcase != (card instanceof ShowcaseCard)) {
+            card = showcase ? new ShowcaseCard(this) : new CurtainCard(this);
+        }
+        int width = getResources().getDisplayMetrics().widthPixels - dp(showcase ? 48 : 32);
+        if (showcase) width = Math.min(width, dp(348));
+        cardParams = new WindowManager.LayoutParams(width, -2,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -495,7 +499,7 @@ public final class MonitorService extends Service {
     private void hideCard(String why) {
         if (card == null || !visible) return;
         visible = false;
-        CurtainCard closing = card;
+        OverlayCard closing = card;
         long epoch = ++animationEpoch;
         closing.animate().cancel();
         float hidden = closing.getHeight() + dp(35);

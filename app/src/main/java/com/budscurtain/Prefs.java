@@ -11,6 +11,10 @@ final class Prefs {
     static SharedPreferences of(Context context) { return context.getSharedPreferences(FILE, Context.MODE_PRIVATE); }
     static String address(Context context) { return of(context).getString("address", ""); }
     static String name(Context context) { return of(context).getString("name", "Xiaomi Buds 5"); }
+    static boolean showcaseCard(Context context) { return of(context).getBoolean("showcase_card", false); }
+    static void setShowcaseCard(Context context, boolean enabled) {
+        of(context).edit().putBoolean("showcase_card", enabled).apply();
+    }
     static void choose(Context context, String name, String address) {
         of(context).edit().putString("name", name).putString("address", address).apply();
     }

@@ -14,7 +14,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-final class CurtainCard extends LinearLayout {
+final class CurtainCard extends OverlayCard {
     private final Metric left;
     private final Metric cradle;
     private final Metric right;
@@ -87,7 +87,7 @@ final class CurtainCard extends LinearLayout {
         applyTheme(AppTheme.isDark(context));
     }
 
-    void applyTheme(boolean dark) {
+    @Override void applyTheme(boolean dark) {
         int ink = dark ? 0xfff4f5f2 : 0xff17232d;
         int muted = dark ? 0xffacb8bc : 0xff71808a;
         int accent = dark ? 0xff8bd5ad : 0xff45977a;
@@ -105,7 +105,7 @@ final class CurtainCard extends LinearLayout {
         right.applyTheme(ink, muted, accent);
     }
 
-    void setLevels(Integer l, Integer r, Integer c, boolean lc, boolean rc, boolean cc, String message) {
+    @Override void setLevels(Integer l, Integer r, Integer c, boolean lc, boolean rc, boolean cc, String message) {
         left.set(l, lc);
         right.set(r, rc);
         cradle.set(c, cc);
@@ -156,10 +156,6 @@ final class CurtainCard extends LinearLayout {
         if (bold) view.setTypeface(null, Typeface.BOLD);
         view.setIncludeFontPadding(false);
         return view;
-    }
-
-    private int dp(float value) {
-        return (int) (value * getResources().getDisplayMetrics().density + .5f);
     }
 
     private static final class Metric {

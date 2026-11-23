@@ -72,7 +72,7 @@ public final class MainActivity extends Activity {
 
         TextView heading = label("Xiaomi Buds 5 Overlay", 26, ink, true);
         page.addView(heading);
-        TextView sub = label("Карточка заряда · 0.7.0", 14, muted, false);
+        TextView sub = label("Карточка заряда · 0.7.1", 14, muted, false);
         addSpace(page, sub, 5);
 
         deviceText = label("", 15, ink, false);
@@ -82,10 +82,20 @@ public final class MainActivity extends Activity {
         addSpace(page, appearance, 0);
         TextView appearanceHelp = label("Тема приложения и карточки", 12, muted, false);
         addSpace(page, appearanceHelp, 5);
-        addThemeOption(page, "Как в системе", "Меняется вместе с темой телефона", AppTheme.SYSTEM, ink, muted, accent);
-        addThemeOption(page, "Светлая", "Светлая карточка всегда", AppTheme.LIGHT, ink, muted, accent);
-        addThemeOption(page, "Тёмная", "Графитовая карточка всегда", AppTheme.DARK, ink, muted, accent);
+        addAppearanceOption(page, "Как в системе", "Меняется вместе с темой телефона", AppTheme.SYSTEM.equals(renderedChoice),
+            () -> chooseTheme(AppTheme.SYSTEM), ink, muted, accent);
+        addAppearanceOption(page, "Светлая", "Светлая карточка всегда", AppTheme.LIGHT.equals(renderedChoice),
+            () -> chooseTheme(AppTheme.LIGHT), ink, muted, accent);
+        addAppearanceOption(page, "Тёмная", "Тёмная карточка всегда", AppTheme.DARK.equals(renderedChoice),
+            () -> chooseTheme(AppTheme.DARK), ink, muted, accent);
 
+        TextView cardStyle = label("Стиль карточки", 14, ink, true);
+        addSpace(page, cardStyle, 18);
+        boolean showcase = Prefs.showcaseCard(this);
+        addAppearanceOption(page, "Стандартная", "Исходное оформление", !showcase,
+            () -> chooseCardStyle(false), ink, muted, accent);
+        addAppearanceOption(page, "Витрина", "Мягкая подсветка и сегменты заряда", showcase,
+            () -> chooseCardStyle(true), ink, muted, accent);
 
         TextView controls = label("Управление", 18, ink, true);
         addSpace(page, controls, 26);
@@ -112,9 +122,8 @@ public final class MainActivity extends Activity {
         if (running) update();
     }
 
-    private void addThemeOption(LinearLayout page, String title, String explanation, String value,
-                                int ink, int muted, int accent) {
-        boolean selected = value.equals(renderedChoice);
+    private void addAppearanceOption(LinearLayout page, String title, String explanation, boolean selected,
+                                     Runnable action, int ink, int muted, int accent) {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
         row.setPadding(dp(14), dp(10), dp(12), dp(10));
@@ -134,8 +143,9 @@ public final class MainActivity extends Activity {
         RadioButton radio = new RadioButton(this);
         radio.setButtonTintList(ColorStateList.valueOf(accent));
         radio.setChecked(selected);
+        radio.setContentDescription(title);
         row.addView(radio);
-        View.OnClickListener choose = v -> chooseTheme(value);
+        View.OnClickListener choose = v -> action.run();
         row.setOnClickListener(choose);
         radio.setOnClickListener(choose);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
@@ -145,9 +155,19 @@ public final class MainActivity extends Activity {
 
     private void chooseTheme(String choice) {
         if (choice.equals(AppTheme.choice(this))) return;
-        int y = scroll.getScrollY();
         AppTheme.choose(this, choice);
         sendBroadcast(new Intent(MonitorService.THEME_CHANGED).setPackage(getPackageName()));
+        rebuildAppearance();
+    }
+
+    private void chooseCardStyle(boolean showcase) {
+        if (showcase == Prefs.showcaseCard(this)) return;
+        Prefs.setShowcaseCard(this, showcase);
+        rebuildAppearance();
+    }
+
+    private void rebuildAppearance() {
+        int y = scroll.getScrollY();
         buildUi();
         scroll.post(() -> scroll.scrollTo(0, y));
     }
